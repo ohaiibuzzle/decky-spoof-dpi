@@ -1,10 +1,16 @@
 {
-  "name": "Example Plugin",
-  "author": "John Doe",
-  "flags": ["debug", "_root"],
+  "name": "Decky SpoofDPI",
+  "author": "OHaiiBuzzle",
+  "flags": [
+    "debug"
+  ],
   "publish": {
-    "tags": ["template", "root"],
-    "description": "Decky example plugin.",
+    "tags": [
+      "proxy",
+      "spoofdpi",
+      "vpn"
+    ],
+    "description": "SpoofDPI plugin for Decky",
     "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"
   }
 }

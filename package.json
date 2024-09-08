@@ -1,7 +1,12 @@
 {
-  "name": "decky-plugin-template",
+  "name": "decky-spoofdpi",
   "version": "0.0.1",
-  "description": "A template to quickly create decky plugins from scratch, based on TypeScript and webpack",
+  "description": "SpoofDPI plugin for Decky",
+  "remote_binary": {
+    "name": "SpoofDPI executable",
+    "url": "https://github.com/xvzc/SpoofDPI/releases/download/v0.10.4/spoof-dpi-linux-amd64.tar.gz",
+    "sha256hash": "063a76a888318f95b69289600180edac004fbfe01d9750b38be10125cc3f82cd"
+  },
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",
     "watch": "rollup -c -w",
@@ -39,7 +44,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "decky-frontend-lib": "^3.24.5",
+    "decky-frontend-lib": "^3.25.0",
     "react-icons": "^4.4.0"
   },
   "pnpm": {

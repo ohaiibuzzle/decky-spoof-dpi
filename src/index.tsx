@@ -21,7 +21,7 @@ import logo from "../assets/logo.png";
 //   right: number;
 // }
 
-const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
+const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
   // const [result, setResult] = useState<number | undefined>();
 
   // const onClick = async () => {
@@ -44,10 +44,10 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
           layout="below"
           onClick={(e) =>
             showContextMenu(
-              <Menu label="Menu" cancelText="CAAAANCEL" onCancel={() => {}}>
-                <MenuItem onSelected={() => {}}>Item #1</MenuItem>
-                <MenuItem onSelected={() => {}}>Item #2</MenuItem>
-                <MenuItem onSelected={() => {}}>Item #3</MenuItem>
+              <Menu label="Menu" cancelText="CAAAANCEL" onCancel={() => { }}>
+                <MenuItem onSelected={() => { }}>Item #1</MenuItem>
+                <MenuItem onSelected={() => { }}>Item #2</MenuItem>
+                <MenuItem onSelected={() => { }}>Item #3</MenuItem>
               </Menu>,
               e.currentTarget ?? window
             )
