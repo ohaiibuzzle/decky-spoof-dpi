@@ -14,7 +14,7 @@ import {
   definePlugin,
   // routerHook
 } from "@decky/api"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaCheckCircle, FaNetworkWired } from "react-icons/fa";
 
 const start = callable<[], number>("start");
@@ -26,9 +26,9 @@ const getSettings = callable<[], [string, string, boolean]>("getSettings");
 
 function Content() {
   const [spoofDpiPid, setSpoofDpiPid] = useState<number | undefined>();
-  const [spoofDpiPort, setSpoofDpiPort] = useState<string | undefined>();
-  const [useDoh, setUseDoh] = useState<boolean | undefined>();
-  const [spoofDpiDns, setSpoofDpiDns] = useState<string | undefined>();
+  const [spoofDpiPort, setSpoofDpiPort] = useState<string>("9696");
+  const [useDoh, setUseDoh] = useState<boolean>(false);
+  const [spoofDpiDns, setSpoofDpiDns] = useState<string>("8.8.8.8");
 
   const onToggleSpoofDPI = async () => {
     console.log("Toggle SpoofDPI")
@@ -43,19 +43,21 @@ function Content() {
     };
   };
 
+  useEffect(() => {
+    getSettings().then(([dns, port, useDoh]) => {
+      setSpoofDpiDns(dns);
+      setSpoofDpiPort(port);
+      setUseDoh(useDoh);
+    });
+  }, []);
+
   getStatus().then((pid) => {
     setSpoofDpiPid(pid);
   });
 
-  
-  getSettings().then(([dns, port, useDoh]) => {
-    setSpoofDpiDns(dns);
-    setUseDoh(useDoh);
-    setSpoofDpiPort(port);
-  })
-  
+
   const setSpoofDpiConfig = async () => {
-    await setSettings(spoofDpiDns || "8.8.8.8", spoofDpiPort || "9696", useDoh || false);
+    await setSettings(spoofDpiDns, spoofDpiPort, useDoh);
   };
 
   return (
@@ -81,22 +83,22 @@ function Content() {
       <PanelSectionRow>
         <ToggleField
           label="Use DoH"
-          checked={useDoh || false}
+          checked={useDoh}
           onChange={e => setUseDoh(e.valueOf())}
         />
-        
+
         <TextField
           label="DNS Server"
           value={spoofDpiDns}
           onChange={e => setSpoofDpiDns(e.target.value)}
         />
-        
+
         <TextField
           label="Port"
           value={spoofDpiPort}
           onChange={e => setSpoofDpiPort(e.target.value)}
         />
-        
+
         <ButtonItem
           layout="below"
           onClick={setSpoofDpiConfig}
@@ -104,7 +106,6 @@ function Content() {
           Apply Settings
         </ButtonItem>
       </PanelSectionRow>
-      
     </PanelSection>
   );
 };

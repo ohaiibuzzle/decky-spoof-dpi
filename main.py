@@ -45,8 +45,10 @@ class Plugin:
             await self.start()
 
     async def getSettings(self):
-        dns_server, port, use_doh = await SpoofDPIConfig.get_setting("dns_server", "8.8.8.8"), await SpoofDPIConfig.get_setting("port", "9696"), await SpoofDPIConfig.get_setting("use_doh", False)
-        logging.info("Getting SpoofDPI config " + dns_server + " " + port + " " + str(use_doh))
+        dns_server = await SpoofDPIConfig.get_setting("dns_server")
+        port = await SpoofDPIConfig.get_setting("port")
+        use_doh = await SpoofDPIConfig.get_setting("use_doh")
+        logging.info("Getting SpoofDPI config: " + dns_server + " " + port + " " + str(use_doh))
 
         return dns_server, port, use_doh
 
@@ -67,6 +69,6 @@ class Plugin:
 
     async def _migration(self):
         decky_plugin.logger.info("Decky-SpoofDPI is being migrated!")
-        self.stop()
-        spoofdpi_control.reset_deck_proxy_config()
+        await self.stop()
+        await spoofdpi_control.reset_deck_proxy_config()
         pass

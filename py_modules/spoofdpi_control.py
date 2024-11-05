@@ -47,16 +47,20 @@ async def cleanup_spoofdpi(with_config=False):
 async def start_spoofdpi() -> Union[subprocess.Popen, None]:
     logging.info("Starting SpoofDPI")
 
+    dns_server = await SpoofDPIConfig.get_setting("dns_server", "8.8.8.8")
+    port = await SpoofDPIConfig.get_setting("port", 9696)
+    use_doh = await SpoofDPIConfig.get_setting("use_doh", False)
+
     if not os.path.exists(constants.DECK_PROXY_PATH):
         logging.info("Setting up decky proxy config")
         await SpoofDPIConfig.set_setting("auto_start", True)
-        await set_deck_proxy_config(await SpoofDPIConfig.get_setting("port", 9696))
+        await set_deck_proxy_config(port)
 
     logging.info("Starting SpoofDPI with dns server " +
-                 await SpoofDPIConfig.get_setting("dns_server", '8.8.8.8') + " and port " + str(await SpoofDPIConfig.get_setting("port", 9696)))
+                 dns_server + " and port " + str(port) + " and use_doh " + str(use_doh))
 
-    sdpi_subprocess = subprocess.Popen([constants.SPOOF_DPI_PATH, "-silent=true", f"-dns-addr={await SpoofDPIConfig.get_setting('dns_server', '8.8.8.8')}",
-                                        f"-port={str(await SpoofDPIConfig.get_setting('port', 9696))}", f"-enable-doh={str(await SpoofDPIConfig.get_setting('use_doh', False))}"])
+    sdpi_subprocess = subprocess.Popen([constants.SPOOF_DPI_PATH, "-silent=true", f"-dns-addr={dns_server}",
+                                        f"-port={port}", f"-enable-doh={use_doh}"])
     pid = sdpi_subprocess.pid
 
     logging.info(f"Started SpoofDPI with pid {pid}")
