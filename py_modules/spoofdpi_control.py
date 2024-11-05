@@ -10,30 +10,6 @@ import constants
 import logging
 import decky
 
-
-async def get_spoofdpi():
-    if not os.path.exists(constants.SPOOF_DPI_PATH):
-        logging.info("Downloading SpoofDPI")
-
-        # create a control ".downloading" file
-        open("/tmp/decky-spoofdpi.downloading", "w").close()
-
-        # spoof-dpi is a tar gz file, we need to extract it
-        # response = requests.get(constants.SPOOFDPI_BINARY)
-        # well i guess we run wget
-        os.system("wget " + constants.SPOOFDPI_BINARY +
-                  " -O /tmp/decky-spoofdpi.tar.gz")
-        response = open("/tmp/decky-spoofdpi.tar.gz", "rb")
-
-        ungzipped = gzip.GzipFile(fileobj=response)
-        tar = tarfile.open(fileobj=ungzipped)
-        tar.extractall(path=os.path.dirname(constants.SPOOF_DPI_PATH))
-        tar.close()
-        os.chmod(constants.SPOOF_DPI_PATH, 0o755)
-
-        os.remove("/tmp/decky-spoofdpi.downloading")
-
-
 async def set_deck_proxy_config(port):
     TEMPLATE = """
     "proxyconfig"
@@ -78,9 +54,6 @@ async def cleanup_spoofdpi(with_config=False):
 
 async def start_spoofdpi() -> Union[subprocess.Popen, None]:
     logging.info("Starting SpoofDPI")
-
-    if not os.path.exists(constants.SPOOF_DPI_PATH):
-        await get_spoofdpi()
 
     if not os.path.exists(constants.DECK_PROXY_PATH):
         logging.info("Setting up decky proxy config")

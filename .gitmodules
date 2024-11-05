@@ -1,0 +1,3 @@
+[submodule "backend/src/SpoofDPI"]
+	path = backend/src/SpoofDPI
+	url = https://github.com/xvzc/SpoofDPI
