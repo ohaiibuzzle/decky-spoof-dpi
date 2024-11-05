@@ -55,6 +55,7 @@ class Plugin:
 
     async def _uninstall(self):
         decky_plugin.logger.info("Decky-SpoofDPI is being uninstalled!")
+        spoofdpi_control.reset_deck_proxy_config()
         spoofdpi_control.cleanup_spoofdpi(with_config=True)
         pass
 
