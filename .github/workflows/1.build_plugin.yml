@@ -2,10 +2,12 @@ name: Build plugin
 on:
   push:
     branches:
-      - $default-branch
+      - senpai
   pull_request:
     branches:
-      - $default-branch
+      - senpai
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
