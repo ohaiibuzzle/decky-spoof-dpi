@@ -81,35 +81,35 @@ function Content() {
       </PanelSectionRow>
 
       {/* Settings */}
-      <div className={staticClasses.PanelSectionTitle}>Settings</div>
-
-      <PanelSectionRow>
-        <ToggleField
-          label="Use DoH"
-          checked={useDoh || false}
-        />
-        <TextField
-          label="DNS Server"
-          value={spoofDpiDns}
-        />
-        <TextField
-          label="Port"
-          value={spoofDpiPort || "9696"}
-        />
-        <ButtonItem
-          layout="below"
-          onClick={setSpoofDpiConfig}
-        >
-          Apply Settings
-        </ButtonItem>
-      </PanelSectionRow>
+      {spoofDpiPid && (<>
+        <div className={staticClasses.PanelSectionTitle}>Settings</div>
+        <PanelSectionRow>
+          <ToggleField
+            label="Use DoH"
+            checked={useDoh || false}
+          />
+          <TextField
+            label="DNS Server"
+            value={spoofDpiDns}
+          />
+          <TextField
+            label="Port"
+            value={spoofDpiPort || "9696"}
+          />
+          <ButtonItem
+            layout="below"
+            onClick={setSpoofDpiConfig}
+          >
+            Apply Settings
+          </ButtonItem>
+        </PanelSectionRow>
+      </>
+      )}
     </PanelSection>
   );
 };
 
 export default definePlugin(() => {
-  console.log("Template plugin initializing, this is called once on frontend startup")
-
   const restartListener = addEventListener<[]>("decky_spoof_dpi_needs_restart", () => {
     console.log("Backend has requested a restart");
 
