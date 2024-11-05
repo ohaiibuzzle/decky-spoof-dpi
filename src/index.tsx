@@ -2,76 +2,107 @@ import {
   ButtonItem,
   PanelSection,
   PanelSectionRow,
-  Navigation,
-  staticClasses
+  staticClasses,
+  TextField,
+  ToggleField
 } from "@decky/ui";
 import {
+  callable,
   addEventListener,
   removeEventListener,
-  callable,
-  definePlugin,
   toaster,
+  definePlugin,
   // routerHook
 } from "@decky/api"
 import { useState } from "react";
-import { FaShip } from "react-icons/fa";
+import { FaCheckCircle, FaNetworkWired } from "react-icons/fa";
 
-// import logo from "../assets/logo.png";
+const start = callable<[], number>("start");
+const stop = callable<[], void>("stop");
+const getStatus = callable<[], number>("getStatus");
 
-// This function calls the python function "add", which takes in two numbers and returns their sum (as a number)
-// Note the type annotations:
-//  the first one: [first: number, second: number] is for the arguments
-//  the second one: number is for the return value
-const add = callable<[first: number, second: number], number>("add");
-
-// This function calls the python function "start_timer", which takes in no arguments and returns nothing.
-// It starts a (python) timer which eventually emits the event 'timer_event'
-const startTimer = callable<[], void>("start_timer");
+const setSettings = callable<[string, string, boolean], void>("setSettings");
+const getSettings = callable<[], [string, string, boolean]>("getSettings");
 
 function Content() {
-  const [result, setResult] = useState<number | undefined>();
+  const [spoofDpiPid, setSpoofDpiPid] = useState<number | undefined>();
+  const [spoofDpiPort, setSpoofDpiPort] = useState<string>();
+  const [useDoh, setUseDoh] = useState<boolean>();
+  const [spoofDpiDns, setSpoofDpiDns] = useState<string>();
 
-  const onClick = async () => {
-    const result = await add(Math.random(), Math.random());
-    setResult(result);
+  const onToggleSpoofDPI = async () => {
+    console.log("Toggle SpoofDPI")
+
+    if (spoofDpiPid) {
+      await stop();
+      setSpoofDpiPid(undefined);
+    } else {
+      const pid = await start();
+      setSpoofDpiPid(pid);
+      console.log("Started SpoofDPI with PID: " + pid);
+    };
   };
 
+  if (spoofDpiPid === undefined) {
+    getStatus().then((pid) => {
+      setSpoofDpiPid(pid);
+    });
+  }
+
+  const setSpoofDpiConfig = async () => {
+    await setSettings(spoofDpiDns || "8.8.8.8", spoofDpiPort || "9696", useDoh || false);
+  };
+
+  getSettings().then(([dns, port, useDoh]) => {
+    setSpoofDpiDns(dns);
+    setUseDoh(useDoh);
+    setSpoofDpiPort(port);
+  })
+
   return (
-    <PanelSection title="Panel Section">
+    <PanelSection title="SpoofDPI Control">
       <PanelSectionRow>
         <ButtonItem
           layout="below"
-          onClick={onClick}
+          onClick={onToggleSpoofDPI}
         >
-          {result ?? "Add two numbers via Python"}
+          {spoofDpiPid ? "Stop SpoofDPI" : "Start SpoofDPI"}
         </ButtonItem>
       </PanelSectionRow>
       <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={() => startTimer()}
-        >
-          {"Start Python timer"}
-        </ButtonItem>
+        {/* display running status */}
+
+        {spoofDpiPid && (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <FaCheckCircle style={{ color: "green", marginRight: "8px" }} />
+            <p style={{ color: "green" }}>{"SpoofDPI is running with PID: " + spoofDpiPid}</p>
+          </div>
+        )}
       </PanelSectionRow>
 
-      {/* <PanelSectionRow>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <img src={logo} />
-        </div>
-      </PanelSectionRow> */}
+      {/* Settings */}
+      <div className={staticClasses.PanelSectionTitle}>Settings</div>
 
-      {/*<PanelSectionRow>
+      <PanelSectionRow>
+        <ToggleField
+          label="Use DoH"
+          checked={useDoh || false}
+        />
+        <TextField
+          label="DNS Server"
+          value={spoofDpiDns}
+        />
+        <TextField
+          label="Port"
+          value={spoofDpiPort || "9696"}
+        />
         <ButtonItem
           layout="below"
-          onClick={() => {
-            Navigation.Navigate("/decky-plugin-test");
-            Navigation.CloseSideMenus();
-          }}
+          onClick={setSpoofDpiConfig}
         >
-          Router
+          Apply Settings
         </ButtonItem>
-      </PanelSectionRow>*/}
+      </PanelSectionRow>
     </PanelSection>
   );
 };
@@ -79,37 +110,27 @@ function Content() {
 export default definePlugin(() => {
   console.log("Template plugin initializing, this is called once on frontend startup")
 
-  // serverApi.routerHook.addRoute("/decky-plugin-test", DeckyPluginRouterTest, {
-  //   exact: true,
-  // });
+  const restartListener = addEventListener<[]>("decky_spoof_dpi_needs_restart", () => {
+    console.log("Backend has requested a restart");
 
-  // Add an event listener to the "timer_event" event from the backend
-  const listener = addEventListener<[
-    test1: string,
-    test2: boolean,
-    test3: number
-  ]>("timer_event", (test1, test2, test3) => {
-    console.log("Template got timer_event with:", test1, test2, test3)
     toaster.toast({
-      title: "template got timer_event",
-      body: `${test1}, ${test2}, ${test3}`
-    });
-  });
+      title: "SpoofDPI Configuration Updated",
+      body: "Your device will automatically restart shortly...",
+    })
+
+    setTimeout(() => {
+      SteamClient.User.StartRestart(false);
+    }, 5000)
+  })
 
   return {
-    // The name shown in various decky menus
-    name: "Test Plugin",
-    // The element displayed at the top of your plugin's menu
-    titleView: <div className={staticClasses.Title}>Decky Example Plugin</div>,
-    // The content of your plugin's menu
+    name: "Decky SpoofDPI",
+    titleView: <div className={staticClasses.Title}>Decky SpoofDPI</div>,
     content: <Content />,
-    // The icon displayed in the plugin list
-    icon: <FaShip />,
-    // The function triggered when your plugin unloads
+    icon: <FaNetworkWired />,
     onDismount() {
       console.log("Unloading")
-      removeEventListener("timer_event", listener);
-      // serverApi.routerHook.removeRoute("/decky-plugin-test");
+      removeEventListener("decky_spoof_dpi_needs_restart", restartListener)
     },
   };
 });

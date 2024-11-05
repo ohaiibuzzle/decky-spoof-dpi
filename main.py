@@ -1,63 +1,63 @@
+import asyncio
 import os
+import subprocess
+from typing import Union
 
-# The decky plugin module is located at decky-loader/plugin
-# For easy intellisense checkout the decky-loader code one directory up
-# or add the `decky-loader/plugin` path to `python.analysis.extraPaths` in `.vscode/settings.json`
+from config_file import SpoofDPIConfig
 import decky_plugin
 
-import py_modules.constants as constants
-import py_modules.spoofdpi_control as spoofdpi_control
+import spoofdpi_control
 
 
 class Plugin:
-    SDPI_PID = None
+    SDPI_SUBPROCESS: subprocess.Popen = None
+
     async def stop(self):
         # SIGTERM the spoofdpi process
-        if self.SDPI_PID is not None:
-            os.kill(self.SDPI_PID, 15)
+        if self.SDPI_SUBPROCESS is not None:
+            self.SDPI_SUBPROCESS.terminate()
+            await spoofdpi_control.reset_deck_proxy_config()
+            self.SDPI_SUBPROCESS = None
         pass
 
-    async def start(self):
+    async def start(self) -> int:
         # Start the spoofdpi process if self.SDPI_PID is None
-        if self.SDPI_PID is None:
-            spoofdpi_control.start_spoofdpi()
+        if self.SDPI_SUBPROCESS is None:
+            self.SDPI_SUBPROCESS = await spoofdpi_control.start_spoofdpi()
+            return self.SDPI_SUBPROCESS.pid
         pass
 
-    async def getConfig(self):
-        curr_config = spoofdpi_control.SpoofDPIConfig.load()
-        return curr_config.dns_server, curr_config.use_doh, curr_config.port
-    
-    async def setConfig(self, dns_server, use_doh, port):
-        spoofdpi_control.SpoofDPIConfig.save({
-            "dns_server": dns_server,
-            "use_doh": use_doh,
-            "port": port
-        })
-        await self.stop()
+    async def getStatus(self) -> Union[int, None]:
+        if self.SDPI_SUBPROCESS is None:
+            return None
+        return self.SDPI_SUBPROCESS.pid
+
+    async def setSettings(self, dns_server, port, use_doh):
+        await SpoofDPIConfig.set_setting("dns_server", dns_server)
+        await SpoofDPIConfig.set_setting("port", port)
+        await SpoofDPIConfig.set_setting("use_doh", use_doh)
+
+        await self.SDPI_SUBPROCESS.terminate()
+        await spoofdpi_control.set_deck_proxy_config(port)
         await self.start()
-        pass
 
-    # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
+    async def getSettings(self):
+        return await SpoofDPIConfig.get_setting("dns_server", "8.8.8.8"), await SpoofDPIConfig.get_setting("port", "9696"), await SpoofDPIConfig.get_setting("use_doh", "False")
+
     async def _main(self):
         decky_plugin.logger.info("Decky-SpoofDPI has been loaded!")
-        spoofdpi_control.get_spoofdpi()
+        if await SpoofDPIConfig.get_setting("auto_start", False):
+            await self.start()
 
-
-    # Function called first during the unload process, utilize this to handle your plugin being stopped, but not
-    # completely removed
     async def _unload(self):
         decky_plugin.logger.info("Decky-SpoofDPI is being unloaded!")
-        await Plugin.stop()
         pass
 
-    # Function called after `_unload` during uninstall, utilize this to clean up processes and other remnants of your
-    # plugin that may remain on the system
     async def _uninstall(self):
         decky_plugin.logger.info("Decky-SpoofDPI is being uninstalled!")
         spoofdpi_control.cleanup_spoofdpi(with_config=True)
         pass
 
-    # Migrations that should be performed before entering `_main()`.
     async def _migration(self):
         decky_plugin.logger.info("Decky-SpoofDPI is being migrated!")
         await spoofdpi_control.get_spoofdpi()
