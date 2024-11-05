@@ -55,3 +55,6 @@ out/*
 cli/
 cli/*
 cli/decky
+
+# deck.json (who thought it was a good idea?)
+deck.json
