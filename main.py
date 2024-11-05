@@ -1,5 +1,4 @@
-import asyncio
-import os
+import logging
 import subprocess
 from typing import Union
 
@@ -33,16 +32,23 @@ class Plugin:
         return self.SDPI_SUBPROCESS.pid
 
     async def setSettings(self, dns_server, port, use_doh):
+        logging.info("Setting SpoofDPI config to " + dns_server + " " + port + " " + str(use_doh))
+
         await SpoofDPIConfig.set_setting("dns_server", dns_server)
         await SpoofDPIConfig.set_setting("port", port)
         await SpoofDPIConfig.set_setting("use_doh", use_doh)
 
-        await self.SDPI_SUBPROCESS.terminate()
-        await spoofdpi_control.set_deck_proxy_config(port)
-        await self.start()
+        if self.SDPI_SUBPROCESS is not None:
+            self.SDPI_SUBPROCESS.kill()
+            self.SDPI_SUBPROCESS = None
+            await spoofdpi_control.set_deck_proxy_config(port)
+            await self.start()
 
     async def getSettings(self):
-        return await SpoofDPIConfig.get_setting("dns_server", "8.8.8.8"), await SpoofDPIConfig.get_setting("port", "9696"), await SpoofDPIConfig.get_setting("use_doh", "False")
+        dns_server, port, use_doh = await SpoofDPIConfig.get_setting("dns_server", "8.8.8.8"), await SpoofDPIConfig.get_setting("port", "9696"), await SpoofDPIConfig.get_setting("use_doh", False)
+        logging.info("Getting SpoofDPI config " + dns_server + " " + port + " " + str(use_doh))
+
+        return dns_server, port, use_doh
 
     async def _main(self):
         decky_plugin.logger.info("Decky-SpoofDPI has been loaded!")
@@ -61,5 +67,6 @@ class Plugin:
 
     async def _migration(self):
         decky_plugin.logger.info("Decky-SpoofDPI is being migrated!")
-        await spoofdpi_control.get_spoofdpi()
+        self.stop()
+        spoofdpi_control.reset_deck_proxy_config()
         pass

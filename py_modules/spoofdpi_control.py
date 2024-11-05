@@ -41,16 +41,8 @@ async def reset_deck_proxy_config() -> bool:
 
 async def cleanup_spoofdpi(with_config=False):
     logging.info("Cleaning up SpoofDPI")
-
-    if os.path.exists(constants.SPOOF_DPI_PATH):
-        os.remove(constants.SPOOF_DPI_PATH)
-
     if os.path.exists(constants.DECK_PROXY_PATH):
         os.remove(constants.DECK_PROXY_PATH)
-
-    if os.path.exists(constants.CONFIG_PATH) and with_config:
-        os.remove(constants.CONFIG_PATH)
-
 
 async def start_spoofdpi() -> Union[subprocess.Popen, None]:
     logging.info("Starting SpoofDPI")

@@ -26,9 +26,9 @@ const getSettings = callable<[], [string, string, boolean]>("getSettings");
 
 function Content() {
   const [spoofDpiPid, setSpoofDpiPid] = useState<number | undefined>();
-  const [spoofDpiPort, setSpoofDpiPort] = useState<string>();
-  const [useDoh, setUseDoh] = useState<boolean>();
-  const [spoofDpiDns, setSpoofDpiDns] = useState<string>();
+  const [spoofDpiPort, setSpoofDpiPort] = useState<string | undefined>();
+  const [useDoh, setUseDoh] = useState<boolean | undefined>();
+  const [spoofDpiDns, setSpoofDpiDns] = useState<string | undefined>();
 
   const onToggleSpoofDPI = async () => {
     console.log("Toggle SpoofDPI")
@@ -43,21 +43,20 @@ function Content() {
     };
   };
 
-  if (spoofDpiPid === undefined) {
-    getStatus().then((pid) => {
-      setSpoofDpiPid(pid);
-    });
-  }
+  getStatus().then((pid) => {
+    setSpoofDpiPid(pid);
+  });
 
-  const setSpoofDpiConfig = async () => {
-    await setSettings(spoofDpiDns || "8.8.8.8", spoofDpiPort || "9696", useDoh || false);
-  };
-
+  
   getSettings().then(([dns, port, useDoh]) => {
     setSpoofDpiDns(dns);
     setUseDoh(useDoh);
     setSpoofDpiPort(port);
   })
+  
+  const setSpoofDpiConfig = async () => {
+    await setSettings(spoofDpiDns || "8.8.8.8", spoofDpiPort || "9696", useDoh || false);
+  };
 
   return (
     <PanelSection title="SpoofDPI Control">
@@ -70,8 +69,6 @@ function Content() {
         </ButtonItem>
       </PanelSectionRow>
       <PanelSectionRow>
-        {/* display running status */}
-
         {spoofDpiPid && (
           <div style={{ display: "flex", alignItems: "center" }}>
             <FaCheckCircle style={{ color: "green", marginRight: "8px" }} />
@@ -80,31 +77,34 @@ function Content() {
         )}
       </PanelSectionRow>
 
-      {/* Settings */}
-      {spoofDpiPid && (<>
-        <div className={staticClasses.PanelSectionTitle}>Settings</div>
-        <PanelSectionRow>
-          <ToggleField
-            label="Use DoH"
-            checked={useDoh || false}
-          />
-          <TextField
-            label="DNS Server"
-            value={spoofDpiDns}
-          />
-          <TextField
-            label="Port"
-            value={spoofDpiPort || "9696"}
-          />
-          <ButtonItem
-            layout="below"
-            onClick={setSpoofDpiConfig}
-          >
-            Apply Settings
-          </ButtonItem>
-        </PanelSectionRow>
-      </>
-      )}
+      <div className={staticClasses.PanelSectionTitle}>Settings</div>
+      <PanelSectionRow>
+        <ToggleField
+          label="Use DoH"
+          checked={useDoh || false}
+          onChange={e => setUseDoh(e.valueOf())}
+        />
+        
+        <TextField
+          label="DNS Server"
+          value={spoofDpiDns}
+          onChange={e => setSpoofDpiDns(e.target.value)}
+        />
+        
+        <TextField
+          label="Port"
+          value={spoofDpiPort}
+          onChange={e => setSpoofDpiPort(e.target.value)}
+        />
+        
+        <ButtonItem
+          layout="below"
+          onClick={setSpoofDpiConfig}
+        >
+          Apply Settings
+        </ButtonItem>
+      </PanelSectionRow>
+      
     </PanelSection>
   );
 };

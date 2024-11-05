@@ -1,7 +1,7 @@
 #!/bin/bash
 
-cd src/SpoofDPI
-go build
-mkdir -p ../../bin
+cd src/SpoofDPI/cmd/spoofdpi
+go build 
 
-mv spoof-dpi ../../bin/spoof-dpi
+mkdir -p /backend/out
+mv spoofdpi /backend/out/spoofdpi
