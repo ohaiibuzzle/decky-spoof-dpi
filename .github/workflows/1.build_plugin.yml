@@ -1,0 +1,32 @@
+name: Build plugin
+on:
+  push:
+    branches:
+      - [$default-branch]
+  pull_request:
+    branches:
+      - [$default-branch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - name: Install DeckyCLI
+        run: |
+          curl -L -o "$(pwd)"/cli/decky "https://github.com/SteamDeckHomebrew/cli/releases/latest/download/decky-linux-x86_64"
+
+      - name: Build plugin
+        run: |
+          ./cli/decky plugin build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: plugin
+          path: out/Decky-SpoofDPI.zip
