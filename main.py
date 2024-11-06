@@ -11,11 +11,12 @@ import spoofdpi_control
 class Plugin:
     SDPI_SUBPROCESS: subprocess.Popen = None
 
-    async def stop(self):
+    async def stop(self, manually_triggered=True):
         # SIGTERM the spoofdpi process
         if self.SDPI_SUBPROCESS is not None:
-            self.SDPI_SUBPROCESS.terminate()
-            await spoofdpi_control.reset_deck_proxy_config()
+            self.SDPI_SUBPROCESS.kill()
+            if manually_triggered:
+                await spoofdpi_control.reset_deck_proxy_config()
             self.SDPI_SUBPROCESS = None
         pass
 
@@ -59,16 +60,15 @@ class Plugin:
 
     async def _unload(self):
         decky_plugin.logger.info("Decky-SpoofDPI is being unloaded!")
+        await self.stop(manually_triggered=False)
         pass
 
     async def _uninstall(self):
         decky_plugin.logger.info("Decky-SpoofDPI is being uninstalled!")
-        spoofdpi_control.reset_deck_proxy_config()
+        await spoofdpi_control.reset_deck_proxy_config()
         spoofdpi_control.cleanup_spoofdpi(with_config=True)
         pass
 
     async def _migration(self):
         decky_plugin.logger.info("Decky-SpoofDPI is being migrated!")
-        await self.stop()
-        await spoofdpi_control.reset_deck_proxy_config()
         pass
