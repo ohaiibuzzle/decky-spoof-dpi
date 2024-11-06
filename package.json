@@ -1,6 +1,6 @@
 {
   "name": "decky-spoofdpi",
-  "version": "0.0.1",
+  "version": "0.12.0",
   "description": "A SpoofDPI plugin for Decky",
   "type": "module",
   "scripts": {
