@@ -1,13 +1,13 @@
 {
   "name": "Decky-SpoofDPI",
   "author": "OHaiiBuzzle",
-  "flags": [
-    "debug"
-  ],
+  "flags": [],
   "api_version": 1,
   "publish": {
     "tags": [
-      "template"
+      "networking",
+      "spoofdpi",
+      "deep-packet-inspection"
     ],
     "description": "Decky SpoofDPI plugin.",
     "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"

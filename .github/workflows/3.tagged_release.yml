@@ -1,8 +1,9 @@
-name: Create Nightly Release
+name: Create release on main branch tags
 
 on:
-  workflow_dispatch:
-  
+  push:
+    tags:
+      - '*'
 
 permissions:
   contents: write
@@ -23,17 +24,18 @@ jobs:
         with:
           name: plugin
 
-      - name: Get current date
-        id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d %H:%M:%S')"
-
+      - name: Get tag version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+       
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.date.outputs.date }}
-          release_name: Release ${{ steps.date.outputs.date }}
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          release_name: Release ${{ steps.get_version.outputs.VERSION }}
           body: ${{ github.event.head_commit.message }}
           draft: false
-          prerelease: true
+          prerelease: false
           files: ./Decky-SpoofDPI.zip
+  
