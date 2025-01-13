@@ -9,7 +9,7 @@
       "spoofdpi",
       "deep-packet-inspection"
     ],
-    "description": "Decky SpoofDPI plugin.",
-    "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"
+    "description": "An anti-censorship plugin for Decky Loader. This plugin is a wrapper around SpoofDPI for Game Mode",
+    "image": "https://raw.githubusercontent.com/ohaiibuzzle/decky-spoof-dpi/refs/heads/senpai/github_res/plugin-image.jpg"
   }
 }
